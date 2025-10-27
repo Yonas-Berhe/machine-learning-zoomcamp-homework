@@ -1,0 +1,19 @@
+uv 0.9.5 (d5f39331a 2025-10-21)
+
+sha256:20e9e49ecd130598f1ca38a1d85090e1a600147b9c02fa6f15d69cb53d968fda
+
+Probability of churn: 0.534
+
+{
+  "convert_probability": 0.5336072702798061,
+  "convert": true
+}
+
+
+{
+  "convert_probability": 0.5340417283720398,
+  "convert": true
+}
+
+
+agrigorev/zoomcamp-model   2025        14d79fde0bbf   6 days ago     181MB
