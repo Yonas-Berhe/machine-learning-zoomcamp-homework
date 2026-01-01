@@ -151,6 +151,24 @@ def calculate_portfolio_metrics(returns, risk_free_rate=0.02):
         }
 
 
+def safe_metric_format(value, format_type='percent'):
+    """Safely format a metric value for display."""
+    try:
+        if value is None:
+            return "N/A"
+        val = float(value)
+        if np.isnan(val) or np.isinf(val):
+            return "N/A"
+        if format_type == 'percent':
+            return f"{val:.2%}"
+        elif format_type == 'decimal':
+            return f"{val:.2f}"
+        else:
+            return str(val)
+    except (TypeError, ValueError):
+        return "N/A"
+
+
 def softmax(x):
     """Softmax function for converting actions to weights."""
     exp_x = np.exp(x - np.max(x))
@@ -588,13 +606,13 @@ def main():
             
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("Total Return", f"{rl_metrics.get('Total Return', 0.0):.2%}")
+                st.metric("Total Return", safe_metric_format(rl_metrics.get('Total Return'), 'percent'))
             with col2:
-                st.metric("Sharpe Ratio", f"{rl_metrics.get('Sharpe Ratio', 0.0):.2f}")
+                st.metric("Sharpe Ratio", safe_metric_format(rl_metrics.get('Sharpe Ratio'), 'decimal'))
             with col3:
-                st.metric("Max Drawdown", f"{rl_metrics.get('Max Drawdown', 0.0):.2%}")
+                st.metric("Max Drawdown", safe_metric_format(rl_metrics.get('Max Drawdown'), 'percent'))
             with col4:
-                st.metric("Win Rate", f"{rl_metrics.get('Win Rate', 0.0):.2%}")
+                st.metric("Win Rate", safe_metric_format(rl_metrics.get('Win Rate'), 'percent'))
             
             # RL vs Benchmark comparison
             st.subheader("RL Agent vs Benchmark")
@@ -725,13 +743,13 @@ def main():
         # Key metrics
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Total Return", f"{metrics.get('Total Return', 0.0):.2%}")
+            st.metric("Total Return", safe_metric_format(metrics.get('Total Return'), 'percent'))
         with col2:
-            st.metric("Annual Return", f"{metrics.get('Annual Return', 0.0):.2%}")
+            st.metric("Annual Return", safe_metric_format(metrics.get('Annual Return'), 'percent'))
         with col3:
-            st.metric("Sharpe Ratio", f"{metrics.get('Sharpe Ratio', 0.0):.2f}")
+            st.metric("Sharpe Ratio", safe_metric_format(metrics.get('Sharpe Ratio'), 'decimal'))
         with col4:
-            st.metric("Max Drawdown", f"{metrics.get('Max Drawdown', 0.0):.2%}")
+            st.metric("Max Drawdown", safe_metric_format(metrics.get('Max Drawdown'), 'percent'))
         
         # Rolling metrics
         st.subheader("Rolling Performance")
