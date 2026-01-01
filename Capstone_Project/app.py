@@ -360,6 +360,42 @@ def main():
             st.error(f"Error loading data: {str(e)}")
             st.stop()
     
+    # ============================================
+    # CALCULATE ALL STRATEGIES (before tabs so they're available everywhere)
+    # ============================================
+    with st.spinner("Calculating strategy returns..."):
+        strategies = {}
+        weights_data = {}
+        
+        # Equal Weight
+        eq_returns, eq_weights = BenchmarkStrategies.equal_weight(asset_returns)
+        strategies['Equal Weight'] = eq_returns
+        
+        # Risk Parity
+        rp_returns, rp_weights = BenchmarkStrategies.risk_parity(asset_returns, lookback_period)
+        strategies['Risk Parity'] = rp_returns
+        weights_data['Risk Parity'] = rp_weights
+        
+        # Momentum
+        mom_returns, mom_weights = BenchmarkStrategies.momentum(asset_returns, lookback_period, momentum_top_n)
+        strategies['Momentum'] = mom_returns
+        weights_data['Momentum'] = mom_weights
+        
+        # Minimum Variance
+        mv_returns, mv_weights = BenchmarkStrategies.minimum_variance(asset_returns, lookback_period)
+        strategies['Min Variance'] = mv_returns
+        weights_data['Min Variance'] = mv_weights
+        
+        # RL-like Adaptive Strategy
+        rl_returns, rl_weights = run_simple_rl_strategy(asset_returns, window_size)
+        rl_index = asset_returns.index[window_size:]
+        strategies['RL Agent (PPO)'] = pd.Series(rl_returns, index=rl_index)
+        weights_data['RL Agent (PPO)'] = rl_weights
+        
+        # Align benchmark
+        common_index = strategies['Risk Parity'].index
+        strategies['Benchmark (SPY)'] = benchmark_returns.loc[common_index]
+    
     # Create tabs
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 Overview", 
@@ -444,40 +480,6 @@ def main():
     # ============================================
     with tab2:
         st.header("Strategy Performance Comparison")
-        
-        # Calculate strategy returns
-        with st.spinner("Calculating strategy returns..."):
-            strategies = {}
-            weights_data = {}
-            
-            # Equal Weight
-            eq_returns, eq_weights = BenchmarkStrategies.equal_weight(asset_returns)
-            strategies['Equal Weight'] = eq_returns
-            
-            # Risk Parity
-            rp_returns, rp_weights = BenchmarkStrategies.risk_parity(asset_returns, lookback_period)
-            strategies['Risk Parity'] = rp_returns
-            weights_data['Risk Parity'] = rp_weights
-            
-            # Momentum
-            mom_returns, mom_weights = BenchmarkStrategies.momentum(asset_returns, lookback_period, momentum_top_n)
-            strategies['Momentum'] = mom_returns
-            weights_data['Momentum'] = mom_weights
-            
-            # Minimum Variance
-            mv_returns, mv_weights = BenchmarkStrategies.minimum_variance(asset_returns, lookback_period)
-            strategies['Min Variance'] = mv_returns
-            weights_data['Min Variance'] = mv_weights
-            
-            # RL-like Adaptive Strategy
-            rl_returns, rl_weights = run_simple_rl_strategy(asset_returns, window_size)
-            rl_index = asset_returns.index[window_size:]
-            strategies['RL Agent (PPO)'] = pd.Series(rl_returns, index=rl_index)
-            weights_data['RL Agent (PPO)'] = rl_weights
-            
-            # Align benchmark
-            common_index = strategies['Risk Parity'].index
-            strategies['Benchmark (SPY)'] = benchmark_returns.loc[common_index]
         
         # Cumulative returns chart
         fig_cum = go.Figure()
