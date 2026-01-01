@@ -206,23 +206,23 @@ class PortfolioEnvFast(gym.Env):
 
 ## 📊 Results & Performance
 
-### Backtest Results (2019-2023)
+### Backtest Results
 
-| Strategy | Total Return | Annual Return | Sharpe Ratio | Max Drawdown |
-|----------|--------------|---------------|--------------|--------------|
-| **RL Agent (PPO)** | **85.2%** | **13.2%** | **0.89** | **-18.5%** |
-| Equal Weight | 72.4% | 11.5% | 0.74 | -22.3% |
-| Risk Parity | 68.9% | 11.0% | 0.81 | -19.8% |
-| Momentum | 61.2% | 10.0% | 0.62 | -28.4% |
-| Min Variance | 55.8% | 9.3% | 0.78 | -16.2% |
-| Benchmark (SPY) | 64.5% | 10.5% | 0.68 | -23.9% |
+| Strategy | Total Return | Annual Return | Volatility | Sharpe Ratio | Sortino Ratio | Max Drawdown | Win Rate |
+|----------|--------------|---------------|------------|--------------|---------------|--------------|----------|
+| **RL Agent (PPO)** | **10.02%** | **27.22%** | **24.49%** | **1.030** | **1.739** | **-13.03%** | **50.0%** |
+| Equal Weight | 25.13% | 20.57% | 16.46% | 1.128 | 1.945 | -8.31% | 53.3% |
+| Risk Parity | 18.09% | 14.88% | 15.50% | 0.831 | 1.393 | -9.90% | 52.6% |
+| Momentum | 30.39% | 24.79% | 22.02% | 1.035 | 1.727 | -15.73% | 49.7% |
+| Min Variance | 2.51% | 2.09% | 15.22% | 0.006 | 0.009 | -12.72% | 51.3% |
+| Benchmark (SPY) | 5.54% | 14.55% | 20.17% | 0.622 | 1.235 | -7.54% | 46.0% |
 
 ### Key Findings
 
-1. **RL Agent Outperforms**: Achieves highest Sharpe ratio (0.89) indicating superior risk-adjusted returns
+1. **RL Agent Performance**: Achieves highest annual return (27.22%) with a Sharpe ratio of 1.030
 2. **Adaptive Allocation**: RL agent dynamically shifts weights based on market conditions
-3. **Transaction Efficiency**: Learned to minimize unnecessary rebalancing
-4. **Drawdown Control**: Competitive maximum drawdown despite aggressive positioning
+3. **Risk-Adjusted Returns**: Momentum strategy shows strong performance with 1.035 Sharpe ratio
+4. **Drawdown Control**: Equal Weight strategy achieves lowest max drawdown (-8.31%)
 
 ---
 
