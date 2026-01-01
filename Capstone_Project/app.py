@@ -16,6 +16,10 @@ import warnings
 import os
 warnings.filterwarnings('ignore')
 
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(SCRIPT_DIR, "portfolio_ppo_fast.zip")
+
 # Page configuration
 st.set_page_config(
     page_title="Portfolio Optimization Dashboard",
@@ -257,7 +261,7 @@ def main():
     st.sidebar.header("⚙️ Configuration")
     
     # Check for model file
-    model_exists = os.path.exists("portfolio_ppo_fast.zip")
+    model_exists = os.path.exists(MODEL_PATH)
     if model_exists:
         st.sidebar.markdown('<div class="rl-status rl-available">🤖 RL Model Available</div>', unsafe_allow_html=True)
     else:
