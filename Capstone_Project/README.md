@@ -1,6 +1,6 @@
 # 📈 Portfolio Optimization using Deep Reinforcement Learning
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app-name.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://machine-learning-zoomcamp-homework-rl-portofolio-optimization.streamlit.app/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -28,7 +28,19 @@ A comprehensive portfolio optimization system that leverages **Deep Reinforcemen
 
 ---
 
-## 🎯 Project Overview
+## � Live Demo
+
+**🚀 Try the app now:** [**Portfolio Optimization Dashboard**](https://machine-learning-zoomcamp-homework-rl-portofolio-optimization.streamlit.app/)
+
+No installation required! Simply click the link above to:
+- Explore different portfolio optimization strategies
+- Compare RL Agent performance against traditional methods
+- Analyze real-time stock data from Yahoo Finance
+- View interactive charts and risk metrics
+
+---
+
+## �🎯 Project Overview
 
 This project addresses the classic **portfolio optimization problem** - how to allocate capital across multiple assets to maximize returns while managing risk. Traditional approaches like Modern Portfolio Theory (MPT) rely on historical statistics and assumptions that often fail in dynamic markets.
 
@@ -444,7 +456,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Project Link**: [https://github.com/Yonas-Berhe/machine-learning-zoomcamp-homework/tree/main/Capstone_Project](https://github.com/Yonas-Berhe/machine-learning-zoomcamp-homework/tree/main/Capstone_Project)
 
-**Live Demo**: [https://your-app-name.streamlit.app](https://your-app-name.streamlit.app)
+**Live Demo**: [https://machine-learning-zoomcamp-homework-rl-portofolio-optimization.streamlit.app/](https://machine-learning-zoomcamp-homework-rl-portofolio-optimization.streamlit.app/)
 
 ---
 
