@@ -600,19 +600,25 @@ def main():
         """)
         
         # RL Agent Key Metrics
-        rl_rets = strategies.get('RL Agent (PPO)')
-        if rl_rets is not None:
-            rl_metrics = calculate_portfolio_metrics(rl_rets, risk_free_rate)
-            
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Total Return", safe_metric_format(rl_metrics.get('Total Return'), 'percent'))
-            with col2:
-                st.metric("Sharpe Ratio", safe_metric_format(rl_metrics.get('Sharpe Ratio'), 'decimal'))
-            with col3:
-                st.metric("Max Drawdown", safe_metric_format(rl_metrics.get('Max Drawdown'), 'percent'))
-            with col4:
-                st.metric("Win Rate", safe_metric_format(rl_metrics.get('Win Rate'), 'percent'))
+        try:
+            rl_rets = strategies.get('RL Agent (PPO)')
+            if rl_rets is not None and len(rl_rets) > 0:
+                rl_metrics = calculate_portfolio_metrics(rl_rets, risk_free_rate)
+                
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Total Return", safe_metric_format(rl_metrics.get('Total Return'), 'percent'))
+                with col2:
+                    st.metric("Sharpe Ratio", safe_metric_format(rl_metrics.get('Sharpe Ratio'), 'decimal'))
+                with col3:
+                    st.metric("Max Drawdown", safe_metric_format(rl_metrics.get('Max Drawdown'), 'percent'))
+                with col4:
+                    st.metric("Win Rate", safe_metric_format(rl_metrics.get('Win Rate'), 'percent'))
+            else:
+                st.warning("RL Agent returns data not available. Please load data first.")
+        except Exception as e:
+            st.error(f"Error calculating RL metrics: {str(e)}")
+            rl_rets = None
             
             # RL vs Benchmark comparison
             st.subheader("RL Agent vs Benchmark")
@@ -729,27 +735,30 @@ def main():
     with tab4:
         st.header("Detailed Performance Analysis")
         
-        # Strategy selector
-        selected_strategy = st.selectbox(
-            "Select Strategy for Detailed Analysis",
-            options=list(strategies.keys())
-        )
-        
-        strategy_returns = strategies[selected_strategy]
-        if isinstance(strategy_returns, pd.Series):
-            strategy_returns = strategy_returns.reindex(common_index).fillna(0)
-        metrics = calculate_portfolio_metrics(strategy_returns, risk_free_rate)
-        
-        # Key metrics
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Return", safe_metric_format(metrics.get('Total Return'), 'percent'))
-        with col2:
-            st.metric("Annual Return", safe_metric_format(metrics.get('Annual Return'), 'percent'))
-        with col3:
-            st.metric("Sharpe Ratio", safe_metric_format(metrics.get('Sharpe Ratio'), 'decimal'))
-        with col4:
-            st.metric("Max Drawdown", safe_metric_format(metrics.get('Max Drawdown'), 'percent'))
+        try:
+            # Strategy selector
+            selected_strategy = st.selectbox(
+                "Select Strategy for Detailed Analysis",
+                options=list(strategies.keys())
+            )
+            
+            strategy_returns = strategies[selected_strategy]
+            if isinstance(strategy_returns, pd.Series):
+                strategy_returns = strategy_returns.reindex(common_index).fillna(0)
+            metrics = calculate_portfolio_metrics(strategy_returns, risk_free_rate)
+            
+            # Key metrics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Return", safe_metric_format(metrics.get('Total Return'), 'percent'))
+            with col2:
+                st.metric("Annual Return", safe_metric_format(metrics.get('Annual Return'), 'percent'))
+            with col3:
+                st.metric("Sharpe Ratio", safe_metric_format(metrics.get('Sharpe Ratio'), 'decimal'))
+            with col4:
+                st.metric("Max Drawdown", safe_metric_format(metrics.get('Max Drawdown'), 'percent'))
+        except Exception as e:
+            st.error(f"Error calculating performance metrics: {str(e)}")
         
         # Rolling metrics
         st.subheader("Rolling Performance")
