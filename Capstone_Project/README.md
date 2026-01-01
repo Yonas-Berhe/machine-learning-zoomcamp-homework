@@ -4,6 +4,10 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> ⚠️ **Note:** The Jupyter notebook (`Final_Capestone_Project.ipynb`) may not display correctly on GitHub due to rendering issues. You can either:
+> 1. **Download the notebook** and open it locally in Jupyter Notebook/JupyterLab
+> 2. **View the Python script** (`Final_Capestone_Project.py`) which contains the same code
+
 A comprehensive portfolio optimization system that leverages **Deep Reinforcement Learning (PPO - Proximal Policy Optimization)** to dynamically allocate assets and outperform traditional investment strategies. This project includes an interactive **Streamlit dashboard** for real-time analysis and visualization.
 
 ![Portfolio Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen)
