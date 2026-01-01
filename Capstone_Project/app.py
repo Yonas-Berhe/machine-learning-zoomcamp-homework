@@ -16,10 +16,6 @@ import warnings
 import os
 warnings.filterwarnings('ignore')
 
-# Get the directory where this script is located
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(SCRIPT_DIR, "portfolio_ppo_fast.zip")
-
 # Page configuration
 st.set_page_config(
     page_title="Portfolio Optimization Dashboard",
@@ -82,91 +78,40 @@ def load_stock_data(tickers, start_date, end_date):
 
 def calculate_portfolio_metrics(returns, risk_free_rate=0.02):
     """Calculate comprehensive performance metrics."""
-    try:
-        # Convert to numpy array if needed
-        if hasattr(returns, 'values'):
-            returns_arr = returns.values
-        else:
-            returns_arr = np.array(returns)
-        
-        # Remove NaN values
-        returns_arr = returns_arr[~np.isnan(returns_arr)]
-        
-        if len(returns_arr) == 0:
-            return {
-                'Total Return': 0.0,
-                'Annual Return': 0.0,
-                'Volatility': 0.0,
-                'Sharpe Ratio': 0.0,
-                'Sortino Ratio': 0.0,
-                'Max Drawdown': 0.0,
-                'Win Rate': 0.0,
-                'Downside Volatility': 0.0
-            }
-        
-        cumulative = np.cumprod(1 + returns_arr)
-        total_return = float(cumulative[-1] - 1)
-        
-        n_days = len(returns_arr)
-        annual_return = float((1 + total_return) ** (252 / n_days) - 1) if n_days > 0 else 0.0
-        
-        volatility = float(np.std(returns_arr) * np.sqrt(252))
-        
-        negative_returns = returns_arr[returns_arr < 0]
-        downside_vol = float(np.std(negative_returns) * np.sqrt(252)) if len(negative_returns) > 0 else 0.0
-        
-        excess_return = annual_return - risk_free_rate
-        sharpe = float(excess_return / volatility) if volatility > 0 else 0.0
-        sortino = float(excess_return / downside_vol) if downside_vol > 0 else 0.0
-        
+    cumulative = (1 + returns).cumprod()
+    total_return = cumulative.iloc[-1] - 1 if isinstance(cumulative, pd.Series) else cumulative[-1] - 1
+    
+    n_days = len(returns)
+    annual_return = (1 + total_return) ** (252 / n_days) - 1 if n_days > 0 else 0
+    
+    volatility = np.std(returns) * np.sqrt(252)
+    
+    negative_returns = returns[returns < 0]
+    downside_vol = np.std(negative_returns) * np.sqrt(252) if len(negative_returns) > 0 else 0
+    
+    excess_return = annual_return - risk_free_rate
+    sharpe = excess_return / volatility if volatility > 0 else 0
+    sortino = excess_return / downside_vol if downside_vol > 0 else 0
+    
+    if isinstance(cumulative, pd.Series):
+        peak = cumulative.cummax()
+    else:
         peak = np.maximum.accumulate(cumulative)
-        drawdown = (peak - cumulative) / peak
-        max_drawdown = float(np.max(drawdown))
-        
-        win_rate = float(np.mean(returns_arr > 0))
-        
-        # Handle NaN values
-        result = {
-            'Total Return': total_return if not np.isnan(total_return) else 0.0,
-            'Annual Return': annual_return if not np.isnan(annual_return) else 0.0,
-            'Volatility': volatility if not np.isnan(volatility) else 0.0,
-            'Sharpe Ratio': sharpe if not np.isnan(sharpe) else 0.0,
-            'Sortino Ratio': sortino if not np.isnan(sortino) else 0.0,
-            'Max Drawdown': max_drawdown if not np.isnan(max_drawdown) else 0.0,
-            'Win Rate': win_rate if not np.isnan(win_rate) else 0.0,
-            'Downside Volatility': downside_vol if not np.isnan(downside_vol) else 0.0
-        }
-        return result
-    except Exception as e:
-        # Return zeros if calculation fails
-        return {
-            'Total Return': 0.0,
-            'Annual Return': 0.0,
-            'Volatility': 0.0,
-            'Sharpe Ratio': 0.0,
-            'Sortino Ratio': 0.0,
-            'Max Drawdown': 0.0,
-            'Win Rate': 0.0,
-            'Downside Volatility': 0.0
-        }
-
-
-def safe_metric_format(value, format_type='percent'):
-    """Safely format a metric value for display."""
-    try:
-        if value is None:
-            return "N/A"
-        val = float(value)
-        if np.isnan(val) or np.isinf(val):
-            return "N/A"
-        if format_type == 'percent':
-            return f"{val:.2%}"
-        elif format_type == 'decimal':
-            return f"{val:.2f}"
-        else:
-            return str(val)
-    except (TypeError, ValueError):
-        return "N/A"
+    drawdown = (peak - cumulative) / peak
+    max_drawdown = drawdown.max()
+    
+    win_rate = np.mean(returns > 0)
+    
+    return {
+        'Total Return': total_return,
+        'Annual Return': annual_return,
+        'Volatility': volatility,
+        'Sharpe Ratio': sharpe,
+        'Sortino Ratio': sortino,
+        'Max Drawdown': max_drawdown,
+        'Win Rate': win_rate,
+        'Downside Volatility': downside_vol
+    }
 
 
 def softmax(x):
@@ -312,7 +257,7 @@ def main():
     st.sidebar.header("⚙️ Configuration")
     
     # Check for model file
-    model_exists = os.path.exists(MODEL_PATH)
+    model_exists = os.path.exists("portfolio_ppo_fast.zip")
     if model_exists:
         st.sidebar.markdown('<div class="rl-status rl-available">🤖 RL Model Available</div>', unsafe_allow_html=True)
     else:
@@ -377,42 +322,6 @@ def main():
         except Exception as e:
             st.error(f"Error loading data: {str(e)}")
             st.stop()
-    
-    # ============================================
-    # CALCULATE ALL STRATEGIES (before tabs so they're available everywhere)
-    # ============================================
-    with st.spinner("Calculating strategy returns..."):
-        strategies = {}
-        weights_data = {}
-        
-        # Equal Weight
-        eq_returns, eq_weights = BenchmarkStrategies.equal_weight(asset_returns)
-        strategies['Equal Weight'] = eq_returns
-        
-        # Risk Parity
-        rp_returns, rp_weights = BenchmarkStrategies.risk_parity(asset_returns, lookback_period)
-        strategies['Risk Parity'] = rp_returns
-        weights_data['Risk Parity'] = rp_weights
-        
-        # Momentum
-        mom_returns, mom_weights = BenchmarkStrategies.momentum(asset_returns, lookback_period, momentum_top_n)
-        strategies['Momentum'] = mom_returns
-        weights_data['Momentum'] = mom_weights
-        
-        # Minimum Variance
-        mv_returns, mv_weights = BenchmarkStrategies.minimum_variance(asset_returns, lookback_period)
-        strategies['Min Variance'] = mv_returns
-        weights_data['Min Variance'] = mv_weights
-        
-        # RL-like Adaptive Strategy
-        rl_returns, rl_weights = run_simple_rl_strategy(asset_returns, window_size)
-        rl_index = asset_returns.index[window_size:]
-        strategies['RL Agent (PPO)'] = pd.Series(rl_returns, index=rl_index)
-        weights_data['RL Agent (PPO)'] = rl_weights
-        
-        # Align benchmark
-        common_index = strategies['Risk Parity'].index
-        strategies['Benchmark (SPY)'] = benchmark_returns.loc[common_index]
     
     # Create tabs
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -498,6 +407,40 @@ def main():
     # ============================================
     with tab2:
         st.header("Strategy Performance Comparison")
+        
+        # Calculate strategy returns
+        with st.spinner("Calculating strategy returns..."):
+            strategies = {}
+            weights_data = {}
+            
+            # Equal Weight
+            eq_returns, eq_weights = BenchmarkStrategies.equal_weight(asset_returns)
+            strategies['Equal Weight'] = eq_returns
+            
+            # Risk Parity
+            rp_returns, rp_weights = BenchmarkStrategies.risk_parity(asset_returns, lookback_period)
+            strategies['Risk Parity'] = rp_returns
+            weights_data['Risk Parity'] = rp_weights
+            
+            # Momentum
+            mom_returns, mom_weights = BenchmarkStrategies.momentum(asset_returns, lookback_period, momentum_top_n)
+            strategies['Momentum'] = mom_returns
+            weights_data['Momentum'] = mom_weights
+            
+            # Minimum Variance
+            mv_returns, mv_weights = BenchmarkStrategies.minimum_variance(asset_returns, lookback_period)
+            strategies['Min Variance'] = mv_returns
+            weights_data['Min Variance'] = mv_weights
+            
+            # RL-like Adaptive Strategy
+            rl_returns, rl_weights = run_simple_rl_strategy(asset_returns, window_size)
+            rl_index = asset_returns.index[window_size:]
+            strategies['RL Agent (PPO)'] = pd.Series(rl_returns, index=rl_index)
+            weights_data['RL Agent (PPO)'] = rl_weights
+            
+            # Align benchmark
+            common_index = strategies['Risk Parity'].index
+            strategies['Benchmark (SPY)'] = benchmark_returns.loc[common_index]
         
         # Cumulative returns chart
         fig_cum = go.Figure()
@@ -599,139 +542,129 @@ def main():
         - **Transaction cost awareness** - Minimizing unnecessary rebalancing
         """)
         
-        # Get RL returns data
-        rl_rets = strategies.get('RL Agent (PPO)')
-        
         # RL Agent Key Metrics
-        if rl_rets is not None and len(rl_rets) > 0:
-            try:
-                rl_metrics = calculate_portfolio_metrics(rl_rets, risk_free_rate)
-                
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.metric("Total Return", safe_metric_format(rl_metrics.get('Total Return'), 'percent'))
-                with col2:
-                    st.metric("Sharpe Ratio", safe_metric_format(rl_metrics.get('Sharpe Ratio'), 'decimal'))
-                with col3:
-                    st.metric("Max Drawdown", safe_metric_format(rl_metrics.get('Max Drawdown'), 'percent'))
-                with col4:
-                    st.metric("Win Rate", safe_metric_format(rl_metrics.get('Win Rate'), 'percent'))
-            except Exception as e:
-                st.warning(f"Could not calculate metrics: {str(e)}")
+        rl_rets = strategies.get('RL Agent (PPO)')
+        if rl_rets is not None:
+            rl_metrics = calculate_portfolio_metrics(rl_rets, risk_free_rate)
             
-            # RL vs Benchmark comparison (separate try block so graph shows even if metrics fail)
-            try:
-                st.subheader("RL Agent vs Benchmark")
-                
-                fig_rl = go.Figure()
-                
-                # RL cumulative returns
-                rl_cum = (1 + rl_rets).cumprod()
-                fig_rl.add_trace(go.Scatter(
-                    x=rl_cum.index,
-                    y=rl_cum.values,
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Return", f"{rl_metrics['Total Return']:.2%}")
+            with col2:
+                st.metric("Sharpe Ratio", f"{rl_metrics['Sharpe Ratio']:.2f}")
+            with col3:
+                st.metric("Max Drawdown", f"{rl_metrics['Max Drawdown']:.2%}")
+            with col4:
+                st.metric("Win Rate", f"{rl_metrics['Win Rate']:.2%}")
+            
+            # RL vs Benchmark comparison
+            st.subheader("RL Agent vs Benchmark")
+            
+            fig_rl = go.Figure()
+            
+            # RL cumulative returns
+            rl_cum = (1 + rl_rets).cumprod()
+            fig_rl.add_trace(go.Scatter(
+                x=rl_cum.index,
+                y=rl_cum.values,
+                mode='lines',
+                name='RL Agent (PPO)',
+                line=dict(color='#2ca02c', width=2.5)
+            ))
+            
+            # Benchmark
+            bench_aligned = benchmark_returns.loc[rl_cum.index]
+            bench_cum = (1 + bench_aligned).cumprod()
+            fig_rl.add_trace(go.Scatter(
+                x=bench_cum.index,
+                y=bench_cum.values,
+                mode='lines',
+                name='Benchmark (SPY)',
+                line=dict(color='#1f77b4', width=2, dash='dash')
+            ))
+            
+            # Equal weight
+            eq_aligned = eq_returns.loc[rl_cum.index]
+            eq_cum = (1 + eq_aligned).cumprod()
+            fig_rl.add_trace(go.Scatter(
+                x=eq_cum.index,
+                y=eq_cum.values,
+                mode='lines',
+                name='Equal Weight',
+                line=dict(color='#ff7f0e', width=1.5, dash='dot')
+            ))
+            
+            fig_rl.update_layout(
+                title="RL Agent Performance vs Benchmarks",
+                xaxis_title="Date",
+                yaxis_title="Portfolio Value ($1 invested)",
+                height=400,
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_rl, use_container_width=True)
+            
+            # RL Weights over time
+            st.subheader("RL Agent Portfolio Weights Over Time")
+            
+            rl_weights_df = pd.DataFrame(
+                weights_data['RL Agent (PPO)'],
+                columns=tickers,
+                index=rl_rets.index
+            )
+            
+            fig_rl_weights = go.Figure()
+            for col in rl_weights_df.columns:
+                fig_rl_weights.add_trace(go.Scatter(
+                    x=rl_weights_df.index,
+                    y=rl_weights_df[col],
                     mode='lines',
-                    name='RL Agent (PPO)',
-                    line=dict(color='#2ca02c', width=2.5)
+                    stackgroup='one',
+                    name=col
                 ))
-                
-                # Benchmark
-                bench_aligned = benchmark_returns.loc[rl_cum.index]
-                bench_cum = (1 + bench_aligned).cumprod()
-                fig_rl.add_trace(go.Scatter(
-                    x=bench_cum.index,
-                    y=bench_cum.values,
-                    mode='lines',
-                    name='Benchmark (SPY)',
-                    line=dict(color='#1f77b4', width=2, dash='dash')
-                ))
-                
-                # Equal weight
-                eq_aligned = eq_returns.loc[rl_cum.index]
-                eq_cum = (1 + eq_aligned).cumprod()
-                fig_rl.add_trace(go.Scatter(
-                    x=eq_cum.index,
-                    y=eq_cum.values,
-                    mode='lines',
-                    name='Equal Weight',
-                    line=dict(color='#ff7f0e', width=1.5, dash='dot')
-                ))
-                
-                fig_rl.update_layout(
-                    title="RL Agent Performance vs Benchmarks",
-                    xaxis_title="Date",
-                    yaxis_title="Portfolio Value ($1 invested)",
-                    height=400,
-                    hovermode='x unified'
+            
+            fig_rl_weights.update_layout(
+                title='RL Agent - Dynamic Portfolio Allocation',
+                xaxis_title='Date',
+                yaxis_title='Weight',
+                yaxis=dict(tickformat='.0%'),
+                height=400
+            )
+            st.plotly_chart(fig_rl_weights, use_container_width=True)
+            
+            # Average weights pie chart
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                avg_weights = rl_weights_df.mean()
+                fig_pie = px.pie(
+                    values=avg_weights.values,
+                    names=avg_weights.index,
+                    title='RL Agent - Average Portfolio Allocation'
                 )
-                st.plotly_chart(fig_rl, use_container_width=True)
-                
-                # RL Weights over time
-                st.subheader("RL Agent Portfolio Weights Over Time")
-                
-                rl_weights_df = pd.DataFrame(
-                    weights_data['RL Agent (PPO)'],
-                    columns=tickers,
-                    index=rl_rets.index
+                st.plotly_chart(fig_pie, use_container_width=True)
+            
+            with col2:
+                # Weight volatility
+                st.write("**Portfolio Weight Statistics**")
+                weight_stats = pd.DataFrame({
+                    'Mean': rl_weights_df.mean(),
+                    'Std': rl_weights_df.std(),
+                    'Min': rl_weights_df.min(),
+                    'Max': rl_weights_df.max()
+                })
+                st.dataframe(
+                    weight_stats.style.format('{:.2%}'),
+                    use_container_width=True
                 )
-                
-                fig_rl_weights = go.Figure()
-                for col in rl_weights_df.columns:
-                    fig_rl_weights.add_trace(go.Scatter(
-                        x=rl_weights_df.index,
-                        y=rl_weights_df[col],
-                        mode='lines',
-                        stackgroup='one',
-                        name=col
-                    ))
-                
-                fig_rl_weights.update_layout(
-                    title='RL Agent - Dynamic Portfolio Allocation',
-                    xaxis_title='Date',
-                    yaxis_title='Weight',
-                    yaxis=dict(tickformat='.0%'),
-                    height=400
-                )
-                st.plotly_chart(fig_rl_weights, use_container_width=True)
-                
-                # Average weights pie chart
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    avg_weights = rl_weights_df.mean()
-                    fig_pie = px.pie(
-                        values=avg_weights.values,
-                        names=avg_weights.index,
-                        title='RL Agent - Average Portfolio Allocation'
-                    )
-                    st.plotly_chart(fig_pie, use_container_width=True)
-                
-                with col2:
-                    # Weight volatility
-                    st.write("**Portfolio Weight Statistics**")
-                    weight_stats = pd.DataFrame({
-                        'Mean': rl_weights_df.mean(),
-                        'Std': rl_weights_df.std(),
-                        'Min': rl_weights_df.min(),
-                        'Max': rl_weights_df.max()
-                    })
-                    st.dataframe(
-                        weight_stats.style.format('{:.2%}'),
-                        use_container_width=True
-                    )
-                
-                # Model info
-                st.subheader("Model Information")
-                st.info(f"""
-                **Model Type:** PPO (Proximal Policy Optimization)  
-                **Window Size:** {window_size} days  
-                **Transaction Cost:** 0.1% per trade  
-                **Training Environment:** Custom Gymnasium environment with risk-adjusted rewards
-                """)
-            except Exception as e:
-                st.error(f"Error rendering RL charts: {str(e)}")
-        else:
-            st.warning("RL Agent returns data not available. Please load data first.")
+            
+            # Model info
+            st.subheader("Model Information")
+            st.info(f"""
+            **Model Type:** PPO (Proximal Policy Optimization)  
+            **Window Size:** {window_size} days  
+            **Transaction Cost:** 0.1% per trade  
+            **Training Environment:** Custom Gymnasium environment with risk-adjusted rewards
+            """)
     
     # ============================================
     # TAB 4: Performance Analysis
@@ -739,30 +672,27 @@ def main():
     with tab4:
         st.header("Detailed Performance Analysis")
         
-        try:
-            # Strategy selector
-            selected_strategy = st.selectbox(
-                "Select Strategy for Detailed Analysis",
-                options=list(strategies.keys())
-            )
-            
-            strategy_returns = strategies[selected_strategy]
-            if isinstance(strategy_returns, pd.Series):
-                strategy_returns = strategy_returns.reindex(common_index).fillna(0)
-            metrics = calculate_portfolio_metrics(strategy_returns, risk_free_rate)
-            
-            # Key metrics
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Total Return", safe_metric_format(metrics.get('Total Return'), 'percent'))
-            with col2:
-                st.metric("Annual Return", safe_metric_format(metrics.get('Annual Return'), 'percent'))
-            with col3:
-                st.metric("Sharpe Ratio", safe_metric_format(metrics.get('Sharpe Ratio'), 'decimal'))
-            with col4:
-                st.metric("Max Drawdown", safe_metric_format(metrics.get('Max Drawdown'), 'percent'))
-        except Exception as e:
-            st.error(f"Error calculating performance metrics: {str(e)}")
+        # Strategy selector
+        selected_strategy = st.selectbox(
+            "Select Strategy for Detailed Analysis",
+            options=list(strategies.keys())
+        )
+        
+        strategy_returns = strategies[selected_strategy]
+        if isinstance(strategy_returns, pd.Series):
+            strategy_returns = strategy_returns.reindex(common_index).fillna(0)
+        metrics = calculate_portfolio_metrics(strategy_returns, risk_free_rate)
+        
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Return", f"{metrics['Total Return']:.2%}")
+        with col2:
+            st.metric("Annual Return", f"{metrics['Annual Return']:.2%}")
+        with col3:
+            st.metric("Sharpe Ratio", f"{metrics['Sharpe Ratio']:.2f}")
+        with col4:
+            st.metric("Max Drawdown", f"{metrics['Max Drawdown']:.2%}")
         
         # Rolling metrics
         st.subheader("Rolling Performance")

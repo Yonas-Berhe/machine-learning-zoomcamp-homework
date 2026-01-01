@@ -1,23 +1,7 @@
-# ===========================================
-# Streamlit Dashboard Dependencies (Required)
-# ===========================================
+# Streamlit Dashboard Dependencies
 streamlit>=1.28.0
 pandas>=1.5.0
 numpy>=1.23.0
 matplotlib>=3.6.0
 plotly>=5.15.0
 yfinance>=0.2.0
-
-# ===========================================
-# Deep Reinforcement Learning Dependencies
-# (Required for training new models locally)
-# ===========================================
-gymnasium>=0.29.0
-stable-baselines3>=2.0.0
-torch>=2.0.0
-
-# ===========================================
-# Additional Utilities
-# ===========================================
-scipy>=1.10.0
-scikit-learn>=1.2.0
