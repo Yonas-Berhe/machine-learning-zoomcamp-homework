@@ -599,10 +599,12 @@ def main():
         - **Transaction cost awareness** - Minimizing unnecessary rebalancing
         """)
         
+        # Get RL returns data
+        rl_rets = strategies.get('RL Agent (PPO)')
+        
         # RL Agent Key Metrics
-        try:
-            rl_rets = strategies.get('RL Agent (PPO)')
-            if rl_rets is not None and len(rl_rets) > 0:
+        if rl_rets is not None and len(rl_rets) > 0:
+            try:
                 rl_metrics = calculate_portfolio_metrics(rl_rets, risk_free_rate)
                 
                 col1, col2, col3, col4 = st.columns(4)
@@ -614,8 +616,11 @@ def main():
                     st.metric("Max Drawdown", safe_metric_format(rl_metrics.get('Max Drawdown'), 'percent'))
                 with col4:
                     st.metric("Win Rate", safe_metric_format(rl_metrics.get('Win Rate'), 'percent'))
-                
-                # RL vs Benchmark comparison
+            except Exception as e:
+                st.warning(f"Could not calculate metrics: {str(e)}")
+            
+            # RL vs Benchmark comparison (separate try block so graph shows even if metrics fail)
+            try:
                 st.subheader("RL Agent vs Benchmark")
                 
                 fig_rl = go.Figure()
@@ -723,10 +728,10 @@ def main():
                 **Transaction Cost:** 0.1% per trade  
                 **Training Environment:** Custom Gymnasium environment with risk-adjusted rewards
                 """)
-            else:
-                st.warning("RL Agent returns data not available. Please load data first.")
-        except Exception as e:
-            st.error(f"Error calculating RL metrics: {str(e)}")
+            except Exception as e:
+                st.error(f"Error rendering RL charts: {str(e)}")
+        else:
+            st.warning("RL Agent returns data not available. Please load data first.")
     
     # ============================================
     # TAB 4: Performance Analysis
