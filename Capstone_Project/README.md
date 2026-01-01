@@ -10,25 +10,7 @@ A comprehensive portfolio optimization system that leverages **Deep Reinforcemen
 
 ---
 
-## 📋 Table of Contents
-
-- [Project Overview](#-project-overview)
-- [Key Features](#-key-features)
-- [Investment Strategies](#-investment-strategies)
-- [Technical Architecture](#-technical-architecture)
-- [Results & Performance](#-results--performance)
-- [Installation](#-installation)
-- [Running the Streamlit App](#-running-the-streamlit-app)
-- [Deploying to Streamlit Cloud](#-deploying-to-streamlit-cloud)
-- [Project Structure](#-project-structure)
-- [How It Works](#-how-it-works)
-- [Future Improvements](#-future-improvements)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
-## � Live Demo
+## 🚀 Live Demo
 
 **🚀 Try the app now:** [**Portfolio Optimization Dashboard**](https://machine-learning-zoomcamp-homework-rl-portofolio-optimization.streamlit.app/)
 
@@ -40,7 +22,76 @@ No installation required! Simply click the link above to:
 
 ---
 
-## �🎯 Project Overview
+## 📸 Dashboard Screenshots
+
+### 📊 Overview Tab
+![Overview Tab](screenshots/overview_tab.png)
+*Market overview showing normalized price performance of all assets, asset statistics including annual returns, volatility, and Sharpe ratios, plus a correlation matrix heatmap.*
+
+### 📈 Strategy Comparison Tab
+![Strategy Comparison](screenshots/strategy_comparison.png)
+*Side-by-side comparison of all portfolio strategies including RL Agent (PPO), Equal Weight, Risk Parity, Momentum, Minimum Variance, and Benchmark (SPY). Shows cumulative returns and performance metrics.*
+
+### 🤖 RL Agent Tab
+![RL Agent Tab](screenshots/rl_agent_tab.png)
+*Dedicated analysis of the PPO reinforcement learning agent showing performance vs benchmarks, dynamic weight allocation over time, and model information.*
+
+### ⚖️ Portfolio Weights Tab
+![Portfolio Weights](screenshots/portfolio_weights.png)
+*Visualization of portfolio weight evolution over time for each strategy, showing how allocations change dynamically based on market conditions.*
+
+### 📉 Risk Analysis Tab
+![Risk Analysis](screenshots/risk_analysis.png)
+*Comprehensive risk metrics including drawdown analysis, Value at Risk (VaR), Conditional VaR (CVaR), and risk-adjusted performance comparisons.*
+
+---
+
+## 📊 Generated Analysis Charts
+
+### Portfolio Performance Comparison
+![Portfolio Comparison](portfolio_comparison.png)
+*Cumulative returns comparison across all strategies over the backtest period.*
+
+### RL Agent Weight Evolution
+![RL Weights](rl_weights.png)
+*Dynamic portfolio allocation by the RL Agent over time.*
+
+### Drawdown Analysis
+![Drawdowns](drawdowns.png)
+*Peak-to-trough decline comparison for each strategy.*
+
+### Price Analysis
+![Price Analysis](price_analysis.png)
+*Normalized price performance of all assets in the portfolio universe.*
+
+### Average Portfolio Allocation
+![Average Weights](average_weights.png)
+*Average allocation distribution across strategies.*
+
+### Feature Importance
+![Feature Importance](feature_importance.png)
+*Analysis of signals influencing the RL Agent's decisions.*
+
+---
+
+## 📋 Table of Contents
+
+- [Project Overview](#-project-overview)
+- [Key Features](#-key-features)
+- [Investment Strategies](#-investment-strategies)
+- [Technical Architecture](#-technical-architecture)
+- [Results & Performance](#-results--performance)
+- [Installation](#-installation)
+- [Running the Streamlit App](#-running-the-streamlit-app)
+- [Project Structure](#-project-structure)
+- [How It Works](#-how-it-works)
+- [Future Improvements](#-future-improvements)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🎯 Project Overview
 
 This project addresses the classic **portfolio optimization problem** - how to allocate capital across multiple assets to maximize returns while managing risk. Traditional approaches like Modern Portfolio Theory (MPT) rely on historical statistics and assumptions that often fail in dynamic markets.
 
@@ -169,17 +220,6 @@ class PortfolioEnvFast(gym.Env):
 3. **Transaction Efficiency**: Learned to minimize unnecessary rebalancing
 4. **Drawdown Control**: Competitive maximum drawdown despite aggressive positioning
 
-### Generated Visualizations
-
-The project generates several analysis plots:
-- `portfolio_comparison.png` - Cumulative returns comparison
-- `metrics_comparison.png` - Performance metrics bar charts
-- `rl_weights.png` - RL agent weight evolution
-- `drawdowns.png` - Drawdown analysis
-- `price_analysis.png` - Asset price movements
-- `average_weights.png` - Average allocation pie chart
-- `feature_importance.png` - Signal importance analysis
-
 ---
 
 ## 🚀 Installation
@@ -206,24 +246,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Requirements
-
-```
-streamlit>=1.28.0
-pandas>=1.5.0
-numpy>=1.23.0
-matplotlib>=3.6.0
-plotly>=5.15.0
-yfinance>=0.2.0
-```
-
-For training new models (optional):
-```
-torch>=2.0.0
-stable-baselines3>=2.0.0
-gymnasium>=0.28.0
-```
-
 ---
 
 ## 🖥️ Running the Streamlit App
@@ -232,7 +254,7 @@ gymnasium>=0.28.0
 
 1. **Navigate to project directory**:
    ```bash
-   cd /path/to/portfolio-optimization-rl
+   cd machine-learning-zoomcamp-homework/Capstone_Project
    ```
 
 2. **Run the Streamlit app**:
@@ -268,75 +290,10 @@ Use the sidebar to customize:
 
 ---
 
-## ☁️ Deploying to Streamlit Cloud
-
-### Step 1: Prepare Your Repository
-
-Ensure your GitHub repository contains:
-```
-portfolio-optimization-rl/
-├── app.py              # Main Streamlit application
-├── requirements.txt    # Python dependencies
-└── README.md          # This file
-```
-
-### Step 2: Push to GitHub
-
-```bash
-# Initialize git repository
-git init
-
-# Add files
-git add app.py requirements.txt README.md
-
-# Commit changes
-git commit -m "Portfolio Optimization Dashboard"
-
-# Add remote repository
-git remote add origin https://github.com/Yonas-Berhe/machine-learning-zoomcamp-homework.git
-
-# Push to GitHub
-git branch -M main
-git push -u origin main
-```
-
-### Step 3: Deploy on Streamlit Cloud
-
-1. **Go to** [share.streamlit.io](https://share.streamlit.io)
-
-2. **Sign in** with your GitHub account
-
-3. **Click "New app"** button
-
-4. **Configure deployment**:
-   - **Repository**: Select your repo
-   - **Branch**: `main`
-   - **Main file path**: `app.py`
-
-5. **Click "Deploy!"**
-
-6. **Wait** for deployment (2-5 minutes)
-
-7. **Share** your app URL: `https://your-app-name.streamlit.app`
-
-### Deployment Tips
-
-- **Free Tier**: Streamlit Cloud is free for public repositories
-- **Auto-Deploy**: Pushes to main branch trigger automatic redeployment
-- **Secrets**: Use `st.secrets` for API keys (not needed for this app)
-- **Resources**: Free tier provides 1GB RAM, sufficient for this app
-
-### Custom Domain (Optional)
-
-In Streamlit Cloud settings, you can configure a custom domain like:
-`portfolio.yourdomain.com`
-
----
-
 ## 📁 Project Structure
 
 ```
-portfolio-optimization-rl/
+Capstone_Project/
 │
 ├── 📄 app.py                      # Streamlit dashboard application
 ├── 📄 requirements.txt            # Python dependencies
@@ -344,20 +301,25 @@ portfolio-optimization-rl/
 │
 ├── 📓 Final_Capestone_Project.ipynb  # Jupyter notebook with full analysis
 │
-├── 📦 portfolio_ppo_fast.zip      # Trained PPO model (optional)
+├── 📦 portfolio_ppo_fast.zip      # Trained PPO model
 │
-├── 📊 Generated Outputs/
+├── 📸 screenshots/                # Dashboard screenshots
+│   ├── overview_tab.png
+│   ├── strategy_comparison.png
+│   ├── rl_agent_tab.png
+│   ├── portfolio_weights.png
+│   └── risk_analysis.png
+│
+├── 📊 Analysis Outputs/
 │   ├── portfolio_comparison.png   # Strategy comparison chart
-│   ├── metrics_comparison.png     # Performance metrics
 │   ├── rl_weights.png            # RL weight evolution
 │   ├── drawdowns.png             # Drawdown analysis
 │   ├── price_analysis.png        # Price movements
 │   ├── average_weights.png       # Average allocation
-│   ├── feature_importance.png    # Feature analysis
-│   ├── backtest_comparison.csv   # Backtest results data
-│   └── summary_report.txt        # Text summary of results
+│   └── feature_importance.png    # Feature analysis
 │
-└── 📁 .venv/                      # Virtual environment (not in repo)
+├── 📄 backtest_comparison.csv     # Backtest results data
+└── 📄 summary_report.txt          # Text summary of results
 ```
 
 ---

@@ -1,13 +1,13 @@
 PORTFOLIO OPTIMIZATION USING DEEP REINFORCEMENT LEARNING
 ============================================================
 
-Generated:  2026-01-01 14:01:05
+Generated:  2026-01-01 16:10:08
 
 PERFORMANCE COMPARISON
 ------------------------------------------------------------
                  Total Return Annual Return Volatility Sharpe Ratio Sortino Ratio Max Drawdown Win Rate
 Strategy                                                                                               
-RL Agent (PPO)         -2.26%        -5.60%     21.54%       -0.353        -0.502       15.21%    48.0%
+RL Agent (PPO)         10.02%        27.22%     24.49%        1.030         1.739       13.03%    50.0%
 Equal Weight           25.13%        20.57%     16.46%        1.128         1.945        8.31%    53.3%
 Risk Parity            18.09%        14.88%     15.50%        0.831         1.393        9.90%    52.6%
 Momentum               30.39%        24.79%     22.02%        1.035         1.727       15.73%    49.7%
@@ -18,7 +18,7 @@ STRATEGY RANKINGS (by Sharpe Ratio)
 ------------------------------------------------------------
 1. Equal Weight: 1.128
 2. Momentum: 1.035
-3. Risk Parity: 0.831
-4. SPY (Buy & Hold): 0.622
-5. Min Variance: 0.006
-6. RL Agent (PPO): -0.353
+3. RL Agent (PPO): 1.030
+4. Risk Parity: 0.831
+5. SPY (Buy & Hold): 0.622
+6. Min Variance: 0.006
