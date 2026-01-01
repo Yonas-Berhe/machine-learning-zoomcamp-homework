@@ -614,120 +614,119 @@ def main():
                     st.metric("Max Drawdown", safe_metric_format(rl_metrics.get('Max Drawdown'), 'percent'))
                 with col4:
                     st.metric("Win Rate", safe_metric_format(rl_metrics.get('Win Rate'), 'percent'))
+                
+                # RL vs Benchmark comparison
+                st.subheader("RL Agent vs Benchmark")
+                
+                fig_rl = go.Figure()
+                
+                # RL cumulative returns
+                rl_cum = (1 + rl_rets).cumprod()
+                fig_rl.add_trace(go.Scatter(
+                    x=rl_cum.index,
+                    y=rl_cum.values,
+                    mode='lines',
+                    name='RL Agent (PPO)',
+                    line=dict(color='#2ca02c', width=2.5)
+                ))
+                
+                # Benchmark
+                bench_aligned = benchmark_returns.loc[rl_cum.index]
+                bench_cum = (1 + bench_aligned).cumprod()
+                fig_rl.add_trace(go.Scatter(
+                    x=bench_cum.index,
+                    y=bench_cum.values,
+                    mode='lines',
+                    name='Benchmark (SPY)',
+                    line=dict(color='#1f77b4', width=2, dash='dash')
+                ))
+                
+                # Equal weight
+                eq_aligned = eq_returns.loc[rl_cum.index]
+                eq_cum = (1 + eq_aligned).cumprod()
+                fig_rl.add_trace(go.Scatter(
+                    x=eq_cum.index,
+                    y=eq_cum.values,
+                    mode='lines',
+                    name='Equal Weight',
+                    line=dict(color='#ff7f0e', width=1.5, dash='dot')
+                ))
+                
+                fig_rl.update_layout(
+                    title="RL Agent Performance vs Benchmarks",
+                    xaxis_title="Date",
+                    yaxis_title="Portfolio Value ($1 invested)",
+                    height=400,
+                    hovermode='x unified'
+                )
+                st.plotly_chart(fig_rl, use_container_width=True)
+                
+                # RL Weights over time
+                st.subheader("RL Agent Portfolio Weights Over Time")
+                
+                rl_weights_df = pd.DataFrame(
+                    weights_data['RL Agent (PPO)'],
+                    columns=tickers,
+                    index=rl_rets.index
+                )
+                
+                fig_rl_weights = go.Figure()
+                for col in rl_weights_df.columns:
+                    fig_rl_weights.add_trace(go.Scatter(
+                        x=rl_weights_df.index,
+                        y=rl_weights_df[col],
+                        mode='lines',
+                        stackgroup='one',
+                        name=col
+                    ))
+                
+                fig_rl_weights.update_layout(
+                    title='RL Agent - Dynamic Portfolio Allocation',
+                    xaxis_title='Date',
+                    yaxis_title='Weight',
+                    yaxis=dict(tickformat='.0%'),
+                    height=400
+                )
+                st.plotly_chart(fig_rl_weights, use_container_width=True)
+                
+                # Average weights pie chart
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    avg_weights = rl_weights_df.mean()
+                    fig_pie = px.pie(
+                        values=avg_weights.values,
+                        names=avg_weights.index,
+                        title='RL Agent - Average Portfolio Allocation'
+                    )
+                    st.plotly_chart(fig_pie, use_container_width=True)
+                
+                with col2:
+                    # Weight volatility
+                    st.write("**Portfolio Weight Statistics**")
+                    weight_stats = pd.DataFrame({
+                        'Mean': rl_weights_df.mean(),
+                        'Std': rl_weights_df.std(),
+                        'Min': rl_weights_df.min(),
+                        'Max': rl_weights_df.max()
+                    })
+                    st.dataframe(
+                        weight_stats.style.format('{:.2%}'),
+                        use_container_width=True
+                    )
+                
+                # Model info
+                st.subheader("Model Information")
+                st.info(f"""
+                **Model Type:** PPO (Proximal Policy Optimization)  
+                **Window Size:** {window_size} days  
+                **Transaction Cost:** 0.1% per trade  
+                **Training Environment:** Custom Gymnasium environment with risk-adjusted rewards
+                """)
             else:
                 st.warning("RL Agent returns data not available. Please load data first.")
         except Exception as e:
             st.error(f"Error calculating RL metrics: {str(e)}")
-            rl_rets = None
-            
-            # RL vs Benchmark comparison
-            st.subheader("RL Agent vs Benchmark")
-            
-            fig_rl = go.Figure()
-            
-            # RL cumulative returns
-            rl_cum = (1 + rl_rets).cumprod()
-            fig_rl.add_trace(go.Scatter(
-                x=rl_cum.index,
-                y=rl_cum.values,
-                mode='lines',
-                name='RL Agent (PPO)',
-                line=dict(color='#2ca02c', width=2.5)
-            ))
-            
-            # Benchmark
-            bench_aligned = benchmark_returns.loc[rl_cum.index]
-            bench_cum = (1 + bench_aligned).cumprod()
-            fig_rl.add_trace(go.Scatter(
-                x=bench_cum.index,
-                y=bench_cum.values,
-                mode='lines',
-                name='Benchmark (SPY)',
-                line=dict(color='#1f77b4', width=2, dash='dash')
-            ))
-            
-            # Equal weight
-            eq_aligned = eq_returns.loc[rl_cum.index]
-            eq_cum = (1 + eq_aligned).cumprod()
-            fig_rl.add_trace(go.Scatter(
-                x=eq_cum.index,
-                y=eq_cum.values,
-                mode='lines',
-                name='Equal Weight',
-                line=dict(color='#ff7f0e', width=1.5, dash='dot')
-            ))
-            
-            fig_rl.update_layout(
-                title="RL Agent Performance vs Benchmarks",
-                xaxis_title="Date",
-                yaxis_title="Portfolio Value ($1 invested)",
-                height=400,
-                hovermode='x unified'
-            )
-            st.plotly_chart(fig_rl, use_container_width=True)
-            
-            # RL Weights over time
-            st.subheader("RL Agent Portfolio Weights Over Time")
-            
-            rl_weights_df = pd.DataFrame(
-                weights_data['RL Agent (PPO)'],
-                columns=tickers,
-                index=rl_rets.index
-            )
-            
-            fig_rl_weights = go.Figure()
-            for col in rl_weights_df.columns:
-                fig_rl_weights.add_trace(go.Scatter(
-                    x=rl_weights_df.index,
-                    y=rl_weights_df[col],
-                    mode='lines',
-                    stackgroup='one',
-                    name=col
-                ))
-            
-            fig_rl_weights.update_layout(
-                title='RL Agent - Dynamic Portfolio Allocation',
-                xaxis_title='Date',
-                yaxis_title='Weight',
-                yaxis=dict(tickformat='.0%'),
-                height=400
-            )
-            st.plotly_chart(fig_rl_weights, use_container_width=True)
-            
-            # Average weights pie chart
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                avg_weights = rl_weights_df.mean()
-                fig_pie = px.pie(
-                    values=avg_weights.values,
-                    names=avg_weights.index,
-                    title='RL Agent - Average Portfolio Allocation'
-                )
-                st.plotly_chart(fig_pie, use_container_width=True)
-            
-            with col2:
-                # Weight volatility
-                st.write("**Portfolio Weight Statistics**")
-                weight_stats = pd.DataFrame({
-                    'Mean': rl_weights_df.mean(),
-                    'Std': rl_weights_df.std(),
-                    'Min': rl_weights_df.min(),
-                    'Max': rl_weights_df.max()
-                })
-                st.dataframe(
-                    weight_stats.style.format('{:.2%}'),
-                    use_container_width=True
-                )
-            
-            # Model info
-            st.subheader("Model Information")
-            st.info(f"""
-            **Model Type:** PPO (Proximal Policy Optimization)  
-            **Window Size:** {window_size} days  
-            **Transaction Cost:** 0.1% per trade  
-            **Training Environment:** Custom Gymnasium environment with risk-adjusted rewards
-            """)
     
     # ============================================
     # TAB 4: Performance Analysis
