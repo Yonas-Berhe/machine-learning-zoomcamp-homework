@@ -82,40 +82,73 @@ def load_stock_data(tickers, start_date, end_date):
 
 def calculate_portfolio_metrics(returns, risk_free_rate=0.02):
     """Calculate comprehensive performance metrics."""
-    cumulative = (1 + returns).cumprod()
-    total_return = cumulative.iloc[-1] - 1 if isinstance(cumulative, pd.Series) else cumulative[-1] - 1
-    
-    n_days = len(returns)
-    annual_return = (1 + total_return) ** (252 / n_days) - 1 if n_days > 0 else 0
-    
-    volatility = np.std(returns) * np.sqrt(252)
-    
-    negative_returns = returns[returns < 0]
-    downside_vol = np.std(negative_returns) * np.sqrt(252) if len(negative_returns) > 0 else 0
-    
-    excess_return = annual_return - risk_free_rate
-    sharpe = excess_return / volatility if volatility > 0 else 0
-    sortino = excess_return / downside_vol if downside_vol > 0 else 0
-    
-    if isinstance(cumulative, pd.Series):
-        peak = cumulative.cummax()
-    else:
+    try:
+        # Convert to numpy array if needed
+        if hasattr(returns, 'values'):
+            returns_arr = returns.values
+        else:
+            returns_arr = np.array(returns)
+        
+        # Remove NaN values
+        returns_arr = returns_arr[~np.isnan(returns_arr)]
+        
+        if len(returns_arr) == 0:
+            return {
+                'Total Return': 0.0,
+                'Annual Return': 0.0,
+                'Volatility': 0.0,
+                'Sharpe Ratio': 0.0,
+                'Sortino Ratio': 0.0,
+                'Max Drawdown': 0.0,
+                'Win Rate': 0.0,
+                'Downside Volatility': 0.0
+            }
+        
+        cumulative = np.cumprod(1 + returns_arr)
+        total_return = float(cumulative[-1] - 1)
+        
+        n_days = len(returns_arr)
+        annual_return = float((1 + total_return) ** (252 / n_days) - 1) if n_days > 0 else 0.0
+        
+        volatility = float(np.std(returns_arr) * np.sqrt(252))
+        
+        negative_returns = returns_arr[returns_arr < 0]
+        downside_vol = float(np.std(negative_returns) * np.sqrt(252)) if len(negative_returns) > 0 else 0.0
+        
+        excess_return = annual_return - risk_free_rate
+        sharpe = float(excess_return / volatility) if volatility > 0 else 0.0
+        sortino = float(excess_return / downside_vol) if downside_vol > 0 else 0.0
+        
         peak = np.maximum.accumulate(cumulative)
-    drawdown = (peak - cumulative) / peak
-    max_drawdown = drawdown.max()
-    
-    win_rate = np.mean(returns > 0)
-    
-    return {
-        'Total Return': total_return,
-        'Annual Return': annual_return,
-        'Volatility': volatility,
-        'Sharpe Ratio': sharpe,
-        'Sortino Ratio': sortino,
-        'Max Drawdown': max_drawdown,
-        'Win Rate': win_rate,
-        'Downside Volatility': downside_vol
-    }
+        drawdown = (peak - cumulative) / peak
+        max_drawdown = float(np.max(drawdown))
+        
+        win_rate = float(np.mean(returns_arr > 0))
+        
+        # Handle NaN values
+        result = {
+            'Total Return': total_return if not np.isnan(total_return) else 0.0,
+            'Annual Return': annual_return if not np.isnan(annual_return) else 0.0,
+            'Volatility': volatility if not np.isnan(volatility) else 0.0,
+            'Sharpe Ratio': sharpe if not np.isnan(sharpe) else 0.0,
+            'Sortino Ratio': sortino if not np.isnan(sortino) else 0.0,
+            'Max Drawdown': max_drawdown if not np.isnan(max_drawdown) else 0.0,
+            'Win Rate': win_rate if not np.isnan(win_rate) else 0.0,
+            'Downside Volatility': downside_vol if not np.isnan(downside_vol) else 0.0
+        }
+        return result
+    except Exception as e:
+        # Return zeros if calculation fails
+        return {
+            'Total Return': 0.0,
+            'Annual Return': 0.0,
+            'Volatility': 0.0,
+            'Sharpe Ratio': 0.0,
+            'Sortino Ratio': 0.0,
+            'Max Drawdown': 0.0,
+            'Win Rate': 0.0,
+            'Downside Volatility': 0.0
+        }
 
 
 def softmax(x):
@@ -553,13 +586,13 @@ def main():
             
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("Total Return", f"{rl_metrics['Total Return']:.2%}")
+                st.metric("Total Return", f"{rl_metrics.get('Total Return', 0.0):.2%}")
             with col2:
-                st.metric("Sharpe Ratio", f"{rl_metrics['Sharpe Ratio']:.2f}")
+                st.metric("Sharpe Ratio", f"{rl_metrics.get('Sharpe Ratio', 0.0):.2f}")
             with col3:
-                st.metric("Max Drawdown", f"{rl_metrics['Max Drawdown']:.2%}")
+                st.metric("Max Drawdown", f"{rl_metrics.get('Max Drawdown', 0.0):.2%}")
             with col4:
-                st.metric("Win Rate", f"{rl_metrics['Win Rate']:.2%}")
+                st.metric("Win Rate", f"{rl_metrics.get('Win Rate', 0.0):.2%}")
             
             # RL vs Benchmark comparison
             st.subheader("RL Agent vs Benchmark")
@@ -690,13 +723,13 @@ def main():
         # Key metrics
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Total Return", f"{metrics['Total Return']:.2%}")
+            st.metric("Total Return", f"{metrics.get('Total Return', 0.0):.2%}")
         with col2:
-            st.metric("Annual Return", f"{metrics['Annual Return']:.2%}")
+            st.metric("Annual Return", f"{metrics.get('Annual Return', 0.0):.2%}")
         with col3:
-            st.metric("Sharpe Ratio", f"{metrics['Sharpe Ratio']:.2f}")
+            st.metric("Sharpe Ratio", f"{metrics.get('Sharpe Ratio', 0.0):.2f}")
         with col4:
-            st.metric("Max Drawdown", f"{metrics['Max Drawdown']:.2%}")
+            st.metric("Max Drawdown", f"{metrics.get('Max Drawdown', 0.0):.2%}")
         
         # Rolling metrics
         st.subheader("Rolling Performance")
