@@ -2,11 +2,18 @@
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://machine-learning-zoomcamp-homework-rl-portofolio-optimization.streamlit.app/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> ⚠️ **Note:** The Jupyter notebook (`Final_Capestone_Project.ipynb`) may not display correctly on GitHub due to rendering issues. You can either:
-> 1. **Download the notebook** and open it locally in Jupyter Notebook/JupyterLab
-> 2. **View the Python script** (`Final_Capestone_Project.py`) which contains the same code
+> ⚠️ **Note:** The Jupyter notebook (`Final_Capestone_Project.ipynb`) may not display correctly on GitHub due to rendering issues.
+
+> 🚀 **Recommended:** This notebook was developed and executed in **Google Colab** with **GPU runtime (T4)**. For the best experience and faster training:
+> 1. Download the notebook from this repository
+> 2. Upload it to [Google Colab](https://colab.research.google.com/)
+> 3. Go to **Runtime → Change runtime type → Select T4 GPU**
+> 4. Run all cells
+>
+> Alternatively, you can view the Python script (`Final_Capestone_Project.py`) which contains the same code.
 
 A comprehensive portfolio optimization system that leverages **Deep Reinforcement Learning (PPO - Proximal Policy Optimization)** to dynamically allocate assets and outperform traditional investment strategies. This project includes an interactive **Streamlit dashboard** for real-time analysis and visualization.
 
@@ -252,9 +259,37 @@ pip install -r requirements.txt
 
 ---
 
+## � Running with Docker
+
+The project is fully containerized for easy deployment and reproducibility.
+
+### Quick Start with Docker
+
+1. **Pull and run the container**:
+   ```bash
+   docker build -t portfolio-optimization .
+   docker run -d -p 8501:8501 --name portfolio-app portfolio-optimization
+   ```
+
+2. **Access the dashboard**:
+   - Open your browser to `http://localhost:8501`
+
+### Docker Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker build -t portfolio-optimization .` | Build the Docker image |
+| `docker run -d -p 8501:8501 --name portfolio-app portfolio-optimization` | Run container in background |
+| `docker stop portfolio-app` | Stop the container |
+| `docker start portfolio-app` | Start the container again |
+| `docker logs portfolio-app` | View container logs |
+| `docker rm portfolio-app` | Remove the container |
+
+---
+
 ## 🖥️ Running the Streamlit App
 
-### Local Development
+### Local Development (Without Docker)
 
 1. **Navigate to project directory**:
    ```bash
@@ -302,8 +337,10 @@ Capstone_Project/
 ├── 📄 app.py                      # Streamlit dashboard application
 ├── 📄 requirements.txt            # Python dependencies
 ├── 📄 README.md                   # Project documentation
+├── 🐳 Dockerfile                  # Docker configuration
+├── 🐳 .dockerignore               # Docker ignore file
 │
-├── 📓 Final_Capestone_Project.ipynb  # Jupyter notebook with full analysis
+├── 📓 Final_Capestone_Project.ipynb  # Jupyter notebook (run in Google Colab with T4 GPU)
 │
 ├── 📦 portfolio_ppo_fast.zip      # Trained PPO model
 │
